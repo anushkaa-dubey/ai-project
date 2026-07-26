@@ -1,0 +1,10 @@
+{
+  "name": "grade-change-intelligence",
+  "version": "1.0.0",
+  "description": "AI-Powered Grade Change Intelligence for Paper Manufacturing",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "dev": "python -m http.server 3000"
+  }
+}
