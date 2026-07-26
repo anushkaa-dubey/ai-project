@@ -5,15 +5,16 @@ from services import copilot_service
 
 router = APIRouter()
 
-class CopilotRequest(BaseModel):
+class DecisionSupportRequest(BaseModel):
     question:       str
     features:       Optional[Dict] = None
     prediction:     Optional[Dict] = None
     recommendation: Optional[Dict] = None
 
 
+@router.post("/decision-support")
 @router.post("/copilot")
-def copilot(req: CopilotRequest):
+def decision_support(req: DecisionSupportRequest):
     answer = copilot_service.answer(
         question=req.question,
         features=req.features or {},

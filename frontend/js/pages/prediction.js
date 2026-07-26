@@ -162,7 +162,7 @@ const PredictionPage = (() => {
     document.getElementById('pred-results').innerHTML = `
       <div class="fade-in" style="display:flex;flex-direction:column;gap:16px">
         <!-- Main prediction card -->
-        <div class="card" style="border-color:${r.status==='SAFE'?'rgba(34,197,94,0.3)':r.status==='WARNING'?'rgba(245,158,11,0.3)':'rgba(239,68,68,0.3)'}">
+        <div class="card" style="border-color:${r.status==='SAFE'?'rgba(65,215,150,0.35)':r.status==='WARNING'?'rgba(255,182,92,0.35)':'rgba(255,111,111,0.35)'}">
           <div class="card-title">Prediction Result</div>
           <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:16px">
             <div>

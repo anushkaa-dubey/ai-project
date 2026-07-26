@@ -1,5 +1,8 @@
 /* API Client */
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = (() => {
+  const host = window.location.hostname || '127.0.0.1';
+  return `http://${host}:8010`;
+})();
 
 const api = {
   async get(path) {
@@ -18,7 +21,7 @@ const api = {
   },
 };
 
-// Global state shared between pages and copilot
+// Global state shared between pages and the decision support panel
 window.appState = {
   lastPrediction:     null,
   lastFeatures:       null,

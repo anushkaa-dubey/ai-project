@@ -49,7 +49,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -68,7 +68,7 @@ app.include_router(simulate.router,     tags=["Simulator"])
 app.include_router(feedback.router,     tags=["Feedback"])
 app.include_router(analytics.router,    tags=["Analytics"])
 app.include_router(correlations.router, tags=["Correlations"])
-app.include_router(copilot.router,      tags=["Copilot"])
+app.include_router(copilot.router,      tags=["Decision Support"])
 
 
 @app.get("/health")

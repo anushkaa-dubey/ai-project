@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from services import ml_service
+from services import ml_service, recommendation_service
 
 router = APIRouter()
 
@@ -32,4 +32,8 @@ def simulate(req: SimulateRequest):
         "prev_grade": features["grade"], "next_grade": features["grade"],
         "time_since_grade_change": 120.0, "is_transition": 0,
     })
-    return ml_service.simulate(features)
+    prediction = ml_service.simulate(features)
+    shap_values = prediction.get("shap_values")
+    recs = recommendation_service.generate_recommendations(features, prediction, shap_values)
+    simulation = {**prediction, "recommendation": recs}
+    return simulation

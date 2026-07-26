@@ -38,8 +38,11 @@ def predict(features: Dict) -> Dict:
 
     # SHAP — use numpy to avoid pandas 3.x issues
     shap_values = _explainer.shap_values(X.to_numpy())
-    shap_row    = shap_values[0]
-    shap_dict   = {col: float(shap_row[i]) for i, col in enumerate(_feature_cols)}
+    if isinstance(shap_values, list):
+        shap_row = np.asarray(shap_values[0]).reshape(-1)
+    else:
+        shap_row = np.asarray(shap_values).reshape(-1)
+    shap_dict = {col: float(shap_row[i]) for i, col in enumerate(_feature_cols)}
 
     # Sorted top contributors
     sorted_shap = sorted(shap_dict.items(), key=lambda x: abs(x[1]), reverse=True)
@@ -80,7 +83,7 @@ def predict(features: Dict) -> Dict:
 
 
 def simulate(features: Dict) -> Dict:
-    """Lightweight predict for what-if simulator (no SHAP for speed)."""
+    """Lightweight predict for what-if simulator with status and confidence."""
     _load_artifacts()
     row  = _build_feature_row(features)
     X    = pd.DataFrame([row], columns=_feature_cols)
@@ -90,8 +93,23 @@ def simulate(features: Dict) -> Dict:
     deviation = predicted_bw - ((lo + hi) / 2)
     status = "SAFE" if lo <= predicted_bw <= hi else \
              ("WARNING" if abs(deviation) <= (hi - lo) * 0.5 else "CRITICAL")
-    return {"predicted_bw": round(predicted_bw, 3), "status": status,
-            "deviation": round(deviation, 3), "safe_range": {"low": lo, "high": hi}}
+
+    iso_row = _build_iso_row(features, predicted_bw)
+    iso_X = pd.DataFrame([iso_row], columns=ISO_FEATURES)
+    anomaly_score = float(-_iso_forest.score_samples(iso_X.to_numpy())[0])
+    anomaly_prob = float(np.clip((anomaly_score - 0.3) / 0.5, 0, 1))
+    confidence = round(max(55, 97 - anomaly_prob * 30 - abs(deviation) * 0.4), 1)
+
+    return {
+        "predicted_bw": round(predicted_bw, 3),
+        "status": status,
+        "deviation": round(deviation, 3),
+        "safe_range": {"low": lo, "high": hi},
+        "confidence": confidence,
+        "anomaly_score": round(anomaly_score, 4),
+        "anomaly_prob": round(anomaly_prob, 3),
+        "metrics": _metrics,
+    }
 
 
 def get_metrics() -> Dict:

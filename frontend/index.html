@@ -14,13 +14,7 @@
     <!-- Sidebar -->
     <aside id="sidebar">
       <div class="sidebar-header">
-        <div class="logo-mark">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect width="28" height="28" rx="6" fill="#FF6B00"/>
-            <path d="M7 14h14M14 7v14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="14" cy="14" r="4" stroke="white" stroke-width="2"/>
-          </svg>
-        </div>
+        <div class="logo-mark">GCI</div>
         <div class="logo-text">
           <span class="logo-main">GCI</span>
           <span class="logo-sub">Grade Change Intelligence</span>
@@ -76,9 +70,9 @@
           </div>
           <div class="grade-badge" id="current-grade-badge">80 GSM</div>
           <div id="clock" class="clock-display">--:--:--</div>
-          <button class="copilot-btn" id="copilot-toggle-btn" title="AI Copilot (Ctrl+K)">
+          <button class="copilot-btn" id="copilot-toggle-btn" title="Decision Support Panel (Ctrl+K)">
             <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
-            AI Copilot
+            Decision Support
           </button>
         </div>
       </header>
@@ -89,29 +83,29 @@
       </div>
     </main>
 
-    <!-- AI Copilot Panel -->
+    <!-- Decision Support Panel -->
     <div id="copilot-panel" class="copilot-panel hidden">
       <div class="copilot-header">
         <div class="copilot-title">
           <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
-          Industrial Decision Support
+          Decision Support Panel
         </div>
         <button id="copilot-close" class="icon-btn">✕</button>
       </div>
       <div class="copilot-messages" id="copilot-messages">
         <div class="copilot-message system">
-          <div class="msg-content">Hello! I'm your Industrial AI Copilot. Ask me about Basis Weight deviations, anomalies, grade transitions, or recommended corrective actions.<br><br><strong>Try asking:</strong><br>• "Why is Basis Weight increasing?"<br>• "What should I do now?"<br>• "Is anything abnormal?"<br>• "How is the grade change progressing?"</div>
+          <div class="msg-content">Hello! I'm your decision support assistant. I use the current prediction, anomaly, and recommendation context to help guide your next action.<br><br><strong>Try asking:</strong><br>• "Why is Basis Weight increasing?"<br>• "What should I do now?"<br>• "Is anything abnormal?"<br>• "How is the grade change progressing?"</div>
         </div>
       </div>
       <div class="copilot-suggestions">
-        <button class="suggestion-chip" onclick="sendCopilotSuggestion('Why is Basis Weight increasing?')">Why is BW increasing?</button>
-        <button class="suggestion-chip" onclick="sendCopilotSuggestion('What should I do?')">What should I do?</button>
-        <button class="suggestion-chip" onclick="sendCopilotSuggestion('Is anything abnormal?')">Any anomalies?</button>
-        <button class="suggestion-chip" onclick="sendCopilotSuggestion('Give me a status overview')">Status overview</button>
+        <button class="suggestion-chip" onclick="sendDecisionSupportSuggestion('Why is Basis Weight increasing?')">Why is BW increasing?</button>
+        <button class="suggestion-chip" onclick="sendDecisionSupportSuggestion('What should I do?')">What should I do?</button>
+        <button class="suggestion-chip" onclick="sendDecisionSupportSuggestion('Is anything abnormal?')">Any anomalies?</button>
+        <button class="suggestion-chip" onclick="sendDecisionSupportSuggestion('Give me a status overview')">Status overview</button>
       </div>
       <div class="copilot-input-row">
         <input type="text" id="copilot-input" placeholder="Ask about process conditions, deviations, actions..." />
-        <button id="copilot-send" onclick="sendCopilotMessage()">
+        <button id="copilot-send" onclick="sendDecisionSupportMessage()">
           <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/></svg>
         </button>
       </div>

@@ -8,116 +8,169 @@ const RecommendationsPage = (() => {
   };
   const simState = { ...SIM_DEFAULTS };
 
+  function getStatusClass(status) {
+    if (status === 'CRITICAL') return 'status-critical';
+    if (status === 'WARNING') return 'status-warning';
+    return 'status-safe';
+  }
+
+  function formatBw(value) {
+    return typeof value === 'number' ? `${value.toFixed(2)} g/m²` : '—';
+  }
+
+  function formatConfidence(rec, pred) {
+    const value = typeof rec?.confidence === 'number' ? rec.confidence : typeof pred?.confidence === 'number' ? pred.confidence : null;
+    return value === null ? '—' : `${value}%`;
+  }
+
+  function buildEngineReasoning(rec, pred) {
+    if (!rec) {
+      return 'The recommendation engine is awaiting the latest simulation result.';
+    }
+    if (rec.message) return rec.message;
+    if (rec.recommendations && rec.recommendations.length > 0) {
+      return rec.recommendations[0].reason;
+    }
+    return rec.status === 'SAFE'
+      ? 'The current setpoints remain inside the target operating band, so no corrective action is required.'
+      : 'The current operating point is outside the target band. Review the actions below.';
+  }
+
+  function getLatestSimulation() {
+    return window.appState.latestSimulation || window.appState.lastPrediction || null;
+  }
+
   function render() {
-    const lastRec = window.appState.lastRecommendation;
-    const lastPred = window.appState.lastPrediction;
+    const latestSimulation = getLatestSimulation();
+    const latestRecommendation = latestSimulation?.recommendation || null;
 
     document.getElementById('page-content').innerHTML = `
-      <div class="fade-in" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-
-        <!-- Left: Recommendations -->
-        <div>
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-title">Hybrid Recommendation Engine</div>
-            ${lastRec ? renderRecCards(lastRec) : `
-              <div class="alert alert-info">
-                <span>Run a prediction first to generate recommendations, or use the What-If Simulator to explore setpoints.</span>
-              </div>
-              <button class="btn btn-primary" onclick="App.navigate('prediction')">Go to Prediction →</button>
-            `}
-          </div>
-          ${lastRec && lastRec.recommendations && lastRec.recommendations.length > 0 ? `
-            <div class="card">
-              <div class="card-title">Stabilisation Estimates</div>
-              <div class="metric-row">
-                <span class="metric-name">Estimated Time Saved</span>
-                <span class="metric-val kpi-safe">${lastRec.estimated_stabilization_time_saved_min} min</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Material Waste Prevented</span>
-                <span class="metric-val kpi-accent">${lastRec.estimated_material_waste_prevented_kg} kg</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Recommendation Confidence</span>
-                <span class="metric-val">${lastRec.confidence}%</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Predicted BW After Action</span>
-                <span class="metric-val">${lastRec.recommendations[0].expected_bw_after.toFixed(2)} g/m²</span>
-              </div>
-            </div>` : ''}
-        </div>
-
-        <!-- Right: What-If Simulator -->
-        <div>
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-title">What-If Simulator</div>
-            <div style="margin-bottom:14px">
-              <div class="form-group" style="margin-bottom:12px">
-                <label class="form-label">Paper Grade</label>
-                <select class="form-select" id="sim-grade" onchange="RecommendationsPage.simGradeChange()">
-                  <option value="45">45 GSM</option><option value="60">60 GSM</option>
-                  <option value="80" selected>80 GSM</option><option value="120">120 GSM</option>
-                </select>
-              </div>
-              ${simSlider('Machine Speed', 'sim-ms', SIM_DEFAULTS.machine_speed, 350, 1100, 'm/min')}
-              ${simSlider('Steam Pressure', 'sim-sp', SIM_DEFAULTS.steam_pressure, 2.8, 7.5, 'bar', 0.1)}
-              ${simSlider('Moisture', 'sim-mo', SIM_DEFAULTS.moisture, 2.0, 9.5, '%', 0.1)}
-              ${simSlider('Stock Flow', 'sim-sf', SIM_DEFAULTS.stock_flow, 150, 550, 'L/min')}
-              ${simSlider('Headbox Pressure', 'sim-hp', SIM_DEFAULTS.headbox_pressure, 0.25, 0.90, 'bar', 0.01)}
+      <div class="fade-in recommendations-shell">
+        <div class="card simulator-panel">
+          <div class="card-title">What-If Simulator</div>
+          <div class="simulator-form-stack">
+            <div class="form-group">
+              <label class="form-label">Paper Grade</label>
+              <select class="form-select" id="sim-grade" onchange="RecommendationsPage.simGradeChange()">
+                <option value="45">45 GSM</option><option value="60">60 GSM</option>
+                <option value="80" selected>80 GSM</option><option value="120">120 GSM</option>
+              </select>
             </div>
+            ${simSlider('Machine Speed', 'sim-ms', SIM_DEFAULTS.machine_speed, 350, 1100, 'm/min')}
+            ${simSlider('Steam Pressure', 'sim-sp', SIM_DEFAULTS.steam_pressure, 2.8, 7.5, 'bar', 0.1)}
+            ${simSlider('Moisture', 'sim-mo', SIM_DEFAULTS.moisture, 2.0, 9.5, '%', 0.1)}
+            ${simSlider('Stock Flow', 'sim-sf', SIM_DEFAULTS.stock_flow, 150, 550, 'L/min')}
+            ${simSlider('Headbox Pressure', 'sim-hp', SIM_DEFAULTS.headbox_pressure, 0.25, 0.90, 'bar', 0.01)}
           </div>
-
-          <!-- Sim Result -->
-          <div class="card" id="sim-result">
-            <div class="card-title">Simulated Prediction</div>
-            <div style="text-align:center;padding:20px;color:var(--text-muted)">Adjust sliders to simulate</div>
-          </div>
+        </div>
+        <div class="card action-panel" id="actions-panel"></div>
+        <div class="card recommendations-panel" id="recommendations-card"></div>
+        <div class="card simulator-result-panel" id="sim-result">
+          <div class="card-title">Simulation Result</div>
+          <div class="sim-result-placeholder">Adjust the sliders to simulate a live control scenario.</div>
         </div>
       </div>`;
 
-    // Attach slider events
+    renderRecommendationPanel(latestRecommendation, latestSimulation);
+    renderActionPanel(latestRecommendation);
     attachSliders();
   }
 
-  function renderRecCards(rec) {
-    if (!rec.recommendations || rec.recommendations.length === 0) {
-      return `<div class="alert alert-safe">✓ Basis Weight is within safe range. No corrective action required.</div>`;
-    }
-    const statusBadge = s => {
-      const cls = s==='SAFE'?'badge-safe':s==='WARNING'?'badge-warning':'badge-critical';
-      return `<span class="kpi-badge ${cls}">${s}</span>`;
-    };
-    return `
-      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
-        ${statusBadge(rec.status)}
-        <span style="font-size:13px;color:var(--text-secondary)">Deviation: <strong style="color:${Math.abs(rec.deviation)>3?'var(--warning)':'var(--text-primary)'}">${rec.deviation>0?'+':''}${rec.deviation.toFixed(3)} g/m²</strong></span>
-        <span style="font-size:13px;color:var(--text-secondary)">Confidence: <strong>${rec.confidence}%</strong></span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        ${rec.recommendations.map((r, i) => `
-          <div class="rec-card">
-            <div class="rec-number">ACTION ${i+1}</div>
-            <div class="rec-title">${r.label}</div>
-            <div class="rec-change">
-              <span style="color:var(--text-muted)">${r.current_value} ${r.unit}</span>
-              <span style="color:var(--text-primary);margin:0 8px">→</span>
-              <span style="color:var(--accent);font-weight:700">${r.recommended_value} ${r.unit}</span>
-              <span style="color:${r.delta>0?'var(--critical)':'var(--safe)'}"> (${r.delta_pct > 0?'+':''}${r.delta_pct}%)</span>
-            </div>
-            <div class="rec-reason">${r.reason}</div>
-            <div class="rec-expected-row">
-              <div class="rec-expected-item">
-                <span class="rec-expected-label">Expected BW After</span>
-                <span class="rec-expected-val">${r.expected_bw_after.toFixed(2)} g/m²</span>
-              </div>
-              <div style="display:flex;gap:8px;align-items:flex-end">
-                <button class="btn btn-success btn-sm" onclick="RecommendationsPage.submitFeedback('accept', ${JSON.stringify(r).replace(/"/g,'&quot;')})">✓ Accept</button>
-                <button class="btn btn-danger btn-sm" onclick="RecommendationsPage.submitFeedback('reject', ${JSON.stringify(r).replace(/"/g,'&quot;')})">✗ Reject</button>
-              </div>
-            </div>
-          </div>`).join('')}
+  function renderRecommendationPanel(rec, prediction) {
+    const card = document.getElementById('recommendations-card');
+    if (!card) return;
+
+    const status = rec?.status || 'AWAITING INPUT';
+    card.innerHTML = `
+      <div class="card-title">Recommendation Engine</div>
+      <div class="engine-summary">
+        <div class="engine-status-pill ${getStatusClass(status)}">${status}</div>
+        <div class="engine-metric-grid">
+          <div class="engine-metric-card">
+            <span>Predicted BW</span>
+            <strong>${formatBw(prediction?.predicted_bw ?? rec?.predicted_bw)}</strong>
+          </div>
+          <div class="engine-metric-card">
+            <span>Confidence</span>
+            <strong>${formatConfidence(rec, prediction)}</strong>
+          </div>
+        </div>
+        <div class="engine-reasoning">${buildEngineReasoning(rec, prediction)}</div>
       </div>`;
+  }
+
+  function renderActionPanel(rec) {
+    const panel = document.getElementById('actions-panel');
+    if (!panel) return;
+
+    panel.innerHTML = `
+      <div class="card-title">Recommended Actions</div>
+      <div class="recommendations-grid">
+        ${renderRecCards(rec)}
+      </div>`;
+  }
+
+  function getInferenceSources() {
+    return [
+      'Historical Production Data',
+      'Correlation Analysis',
+      'Process Parameters',
+      'Recipe Limits',
+    ];
+  }
+
+  function renderInferenceSources() {
+    return `
+      <div class="inference-source-block">
+        <div class="inference-source-title">Inference Source</div>
+        <ul class="inference-source-list">
+          ${getInferenceSources().map(source => `<li>${source}</li>`).join('')}
+        </ul>
+      </div>`;
+  }
+
+  function renderRecCards(rec) {
+    if (!rec || !rec.recommendations || rec.recommendations.length === 0) {
+      return `<div class="rec-empty-card">
+        <div class="rec-empty-icon">✓</div>
+        <div class="rec-empty-title">No corrective action required</div>
+        <div class="rec-empty-copy">The current setpoints remain within the target operating band.</div>
+        ${renderInferenceSources()}
+      </div>`;
+    }
+
+    return rec.recommendations.map((r, i) => `
+      <div class="recommendation-card">
+        <div class="rec-top">
+          <div>
+            <div class="rec-number">ACTION ${i + 1}</div>
+            <div class="rec-param-label">${r.label}</div>
+          </div>
+          <span class="rec-chip">${r.unit}</span>
+        </div>
+        <div class="recommendation-values">
+          <div class="value-pill">
+            <span class="value-label">Current Value</span>
+            <strong>${r.current_value} ${r.unit}</strong>
+          </div>
+          <div class="value-pill value-pill-accent">
+            <span class="value-label">Suggested Value</span>
+            <strong>${r.recommended_value} ${r.unit}</strong>
+          </div>
+        </div>
+        <div class="recommendation-reason">${r.reason}</div>
+        ${renderInferenceSources()}
+        <div class="recommendation-foot">
+          <div class="foot-item">
+            <span>Expected Impact</span>
+            <strong>${r.expected_bw_after.toFixed(2)} g/m²</strong>
+          </div>
+          <div class="foot-item">
+            <span>Change</span>
+            <strong>${r.delta > 0 ? '+' : ''}${r.delta.toFixed(2)} ${r.unit}</strong>
+          </div>
+        </div>
+      </div>`).join('');
   }
 
   function simSlider(label, id, def, min, max, unit, step=1) {
@@ -172,7 +225,20 @@ const RecommendationsPage = (() => {
     };
     try {
       const r = await api.post('/simulate', body);
-      renderSimResult(r, body);
+      const simulation = {
+        ...r,
+        recommendation: r.recommendation || null,
+        predicted_bw: r.predicted_bw,
+        status: r.status,
+        confidence: r.confidence,
+        anomaly_prob: r.anomaly_prob,
+        anomaly_score: r.anomaly_score,
+      };
+      window.appState.lastFeatures = body;
+      window.appState.latestSimulation = simulation;
+      window.appState.lastPrediction = simulation;
+      window.appState.lastRecommendation = simulation.recommendation;
+      renderSimResult(simulation, body);
     } catch(e) { /* silent */ }
   }
 
@@ -180,7 +246,7 @@ const RecommendationsPage = (() => {
     const el = document.getElementById('sim-result');
     if (!el) return;
     const statusColor = r.status==='SAFE'?'var(--safe)':r.status==='WARNING'?'var(--warning)':'var(--critical)';
-    const bgColor     = r.status==='SAFE'?'rgba(34,197,94,0.08)':r.status==='WARNING'?'rgba(245,158,11,0.08)':'rgba(239,68,68,0.08)';
+    const bgColor     = r.status==='SAFE'?'rgba(65,215,150,0.10)':r.status==='WARNING'?'rgba(255,182,92,0.10)':'rgba(255,111,111,0.10)';
 
     el.innerHTML = `
       <div class="card-title">Simulated Prediction</div>
@@ -193,6 +259,11 @@ const RecommendationsPage = (() => {
         <span>Deviation: <strong style="color:${Math.abs(r.deviation)>2?'var(--warning)':'var(--text-primary)'}">${r.deviation>0?'+':''}${r.deviation.toFixed(3)}</strong></span>
         <span>Grade: <strong>${body.grade} GSM</strong></span>
       </div>`;
+
+    const latestSimulation = window.appState.latestSimulation || r;
+    const latestRecommendation = latestSimulation?.recommendation || null;
+    renderRecommendationPanel(latestRecommendation, latestSimulation);
+    renderActionPanel(latestRecommendation);
   }
 
   async function submitFeedback(action, rec) {
@@ -220,3 +291,4 @@ const RecommendationsPage = (() => {
   function load() { render(); }
   return { load, simUpdate, simGradeChange, submitFeedback };
 })();
+window.RecommendationsPage = RecommendationsPage;

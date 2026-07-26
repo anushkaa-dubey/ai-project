@@ -1,5 +1,5 @@
 """
-Industrial Decision Support Copilot
+Rule-based Decision Support Assistant
 Answers operator questions using: prediction output, SHAP, anomaly scores,
 recommendation results, and current process values.
 """
@@ -331,7 +331,7 @@ def _general_response(features, prediction, recommendation):
     lo, hi  = _grade_range(grade)
 
     return (
-        f"**Industrial Decision Support Summary — {grade} GSM**\n\n"
+        f"**Decision Support Summary — {grade} GSM**\n\n"
         f"I can help you with:\n"
         f"• **Root cause analysis** — 'Why is Basis Weight increasing?'\n"
         f"• **Anomaly investigation** — 'Is anything abnormal?'\n"

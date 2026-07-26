@@ -131,7 +131,7 @@ const AnalyticsPage = (() => {
       type: 'doughnut',
       data: {
         labels: ['Accepted', 'Rejected'],
-        datasets: [{ data: [fb.accepted, fb.rejected], backgroundColor: ['rgba(34,197,94,0.7)', 'rgba(239,68,68,0.7)'], borderWidth: 0, hoverOffset: 6 }],
+        datasets: [{ data: [fb.accepted, fb.rejected], backgroundColor: ['rgba(65,215,150,0.75)', 'rgba(255,111,111,0.75)'], borderWidth: 0, hoverOffset: 6 }],
       },
       options: {
         responsive: true, maintainAspectRatio: false, cutout: '68%',
@@ -152,7 +152,7 @@ const AnalyticsPage = (() => {
       type: 'bar',
       data: {
         labels: features.map(f => labelMap[f.feature]||f.feature),
-        datasets: [{ data: features.map(f => f.importance), backgroundColor: 'rgba(255,107,0,0.55)', borderColor: '#FF6B00', borderWidth: 1, borderRadius: 3 }],
+        datasets: [{ data: features.map(f => f.importance), backgroundColor: 'rgba(78,220,255,0.55)', borderColor: '#4edcff', borderWidth: 1, borderRadius: 3 }],
       },
       options: {
         indexAxis: 'y', responsive: true, maintainAspectRatio: false,

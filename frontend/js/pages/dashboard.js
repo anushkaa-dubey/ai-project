@@ -12,7 +12,7 @@ const DashboardPage = (() => {
     return `<span class="kpi-badge ${cls}">${s}</span>`;
   }
   function gradeColor(g) {
-    return { 45: '#38bdf8', 60: '#34d399', 80: '#FF6B00', 120: '#a78bfa' }[g] || '#8b9fc7';
+    return { 45: '#4edcff', 60: '#41d796', 80: '#4f7fbf', 120: '#ffb65c' }[g] || '#6b7d90';
   }
 
   function render(data) {
@@ -165,8 +165,8 @@ const DashboardPage = (() => {
         datasets: [{
           label: 'Basis Weight',
           data: actual,
-          borderColor: '#FF6B00',
-          backgroundColor: 'rgba(255,107,0,0.06)',
+          borderColor: '#4edcff',
+          backgroundColor: 'rgba(78,220,255,0.10)',
           borderWidth: 2,
           pointRadius: 0,
           tension: 0.3,
@@ -179,7 +179,7 @@ const DashboardPage = (() => {
           annotations: {
             safeLine: {
               type: 'line', yMin: 76, yMax: 76,
-              borderColor: 'rgba(34,197,94,0.4)', borderWidth: 1, borderDash: [4,4],
+              borderColor: 'rgba(65,215,150,0.45)', borderWidth: 1, borderDash: [4,4],
             }
           }
         }
@@ -198,8 +198,8 @@ const DashboardPage = (() => {
       data: {
         labels,
         datasets: [
-          { label: 'Actual',    data: trend.map(r => r.actual),    borderColor: '#38bdf8', borderWidth: 2, pointRadius: 0, tension: 0.3 },
-          { label: 'Predicted', data: trend.map(r => r.predicted), borderColor: '#FF6B00', borderWidth: 2, pointRadius: 0, tension: 0.3, borderDash: [5,3] },
+          { label: 'Actual',    data: trend.map(r => r.actual),    borderColor: '#4edcff', borderWidth: 2, pointRadius: 0, tension: 0.3 },
+          { label: 'Predicted', data: trend.map(r => r.predicted), borderColor: '#41d796', borderWidth: 2, pointRadius: 0, tension: 0.3, borderDash: [5,3] },
         ],
       },
       options: { ...chartDefaults(), plugins: { ...chartDefaults().plugins,
@@ -247,7 +247,7 @@ const DashboardPage = (() => {
       type: 'bar',
       data: {
         labels,
-        datasets: [{ data: vals, backgroundColor: 'rgba(255,107,0,0.6)', borderColor: '#FF6B00', borderWidth: 1, borderRadius: 4 }],
+        datasets: [{ data: vals, backgroundColor: 'rgba(78,220,255,0.65)', borderColor: '#4edcff', borderWidth: 1, borderRadius: 4 }],
       },
       options: { ...chartDefaults(), indexAxis: 'y',
         scales: {
@@ -261,7 +261,7 @@ const DashboardPage = (() => {
   function buildGradeTimeline(segments) {
     const el = document.getElementById('grade-timeline-bar');
     if (!el || !segments.length) return;
-    const colors = { 45: '#38bdf8', 60: '#34d399', 80: '#FF6B00', 120: '#a78bfa' };
+    const colors = { 45: '#4edcff', 60: '#41d796', 80: '#4f7fbf', 120: '#ffb65c' };
     el.innerHTML = segments.map(s =>
       `<div class="grade-seg" style="background:${colors[s.grade]||'#8b9fc7'}" title="${s.grade} GSM: ${s.start}–${s.end}">${s.grade}</div>`
     ).join('');

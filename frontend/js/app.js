@@ -47,7 +47,7 @@ const App = (() => {
     setInterval(tick, 1000);
   }
 
-  function initCopilot() {
+  function initDecisionSupport() {
     const panel = document.getElementById('copilot-panel');
     const toggleBtn = document.getElementById('copilot-toggle-btn');
     const closeBtn  = document.getElementById('copilot-close');
@@ -59,7 +59,7 @@ const App = (() => {
     input?.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendCopilotMessage();
+        sendDecisionSupportMessage();
       }
     });
 
@@ -83,21 +83,24 @@ const App = (() => {
   function init() {
     initSidebar();
     initClock();
-    initCopilot();
+    initDecisionSupport();
     initAutoRefresh();
     navigate('dashboard');
+    if (window.RecommendationsPage?.load) {
+      window.RecommendationsPage.load();
+    }
   }
 
   return { init, navigate };
 })();
 
-/* Copilot functions (global so inline handlers work) */
-async function sendCopilotMessage() {
+/* Decision support functions (global so inline handlers work) */
+async function sendDecisionSupportMessage() {
   const input = document.getElementById('copilot-input');
   const q = input?.value?.trim();
   if (!q) return;
   input.value = '';
-  appendCopilotMsg(q, 'user');
+  appendDecisionSupportMsg(q, 'user');
   appendThinking();
 
   try {
@@ -107,22 +110,22 @@ async function sendCopilotMessage() {
       prediction:     window.appState.lastPrediction,
       recommendation: window.appState.lastRecommendation,
     };
-    const r = await api.post('/copilot', body);
+    const r = await api.post('/decision-support', body);
     removeThinking();
-    appendCopilotMsg(formatCopilotText(r.answer), 'assistant');
+    appendDecisionSupportMsg(formatDecisionSupportText(r.answer), 'assistant');
   } catch(e) {
     removeThinking();
-    appendCopilotMsg('Backend unavailable. Please start the FastAPI server.', 'assistant');
+    appendDecisionSupportMsg('Backend unavailable. Please start the FastAPI server.', 'assistant');
   }
 }
 
-function sendCopilotSuggestion(q) {
+function sendDecisionSupportSuggestion(q) {
   const input = document.getElementById('copilot-input');
   if (input) input.value = q;
-  sendCopilotMessage();
+  sendDecisionSupportMessage();
 }
 
-function appendCopilotMsg(text, role) {
+function appendDecisionSupportMsg(text, role) {
   const msgs = document.getElementById('copilot-messages');
   if (!msgs) return;
   const div = document.createElement('div');
@@ -147,7 +150,7 @@ function removeThinking() {
   document.getElementById('copilot-thinking')?.remove();
 }
 
-function formatCopilotText(text) {
+function formatDecisionSupportText(text) {
   // Convert markdown-ish to HTML
   return text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')

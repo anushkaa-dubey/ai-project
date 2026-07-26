@@ -39,7 +39,7 @@ SHAP Explainability  Isolation Forest
               │
      ┌────────┼────────┐
      ▼        ▼        ▼
- Dashboard  Simulator AI Copilot
+ Dashboard  Simulator Decision Support
               │
               ▼
       Operator Feedback
@@ -116,7 +116,7 @@ python -m http.server 3000
 | POST   | /feedback       | Submit operator accept/reject feedback           |
 | GET    | /feedback       | Retrieve feedback history                        |
 | GET    | /analytics      | Aggregated metrics, model performance            |
-| POST   | /copilot        | Industrial AI Copilot NL responses               |
+| POST   | /decision-support | Structured decision-support responses        |
 | GET    | /docs           | Swagger UI (interactive API docs)                |
 
 ---
@@ -199,7 +199,7 @@ Each recommendation includes:
 | Operator Feedback | Submit accept/reject/comment, full history table     |
 | Analytics         | Feedback donut, Feature importance, Operator activity, Value KPIs |
 
-### AI Copilot
+### Decision Support Panel
 - Floating panel (toggle button or **Ctrl+K**)
 - Answers using: prediction output, SHAP, anomaly scores, recommendations
 - Example queries:
