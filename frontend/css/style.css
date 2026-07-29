@@ -1050,7 +1050,7 @@ textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3
   #topbar { padding-left: 0; }
   #mobile-menu-btn {
     height: var(--topbar-h);
-    padding: 0 20px;
+    padding: 0 16px 0 0;
     border-radius: 0;
     border-right: 1px solid var(--border);
     margin-right: 12px;
@@ -1073,7 +1073,7 @@ textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3
   }
   #mobile-menu-btn {
     height: auto;
-    padding: 0 16px;
+    padding: 4px 12px 4px 0;
     border-right: none;
     margin-right: 0;
   }
