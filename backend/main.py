@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from database.db import engine
+from database.db import engine, init_db
 from routers import dashboard, predict, simulate, feedback, analytics, correlations, copilot
 from config import settings
 
@@ -69,7 +69,8 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     logger.info("Starting up Grade Change Intelligence API...")
-
+    init_db()
+    logger.info("Database initialized successfully.")
 
 # ── Centralized Error Handling ────────────────────────────────────────────────
 @app.exception_handler(RequestValidationError)
