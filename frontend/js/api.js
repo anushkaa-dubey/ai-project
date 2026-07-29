@@ -4,8 +4,7 @@ const API_BASE = (() => {
   if (host === 'localhost' || host === '127.0.0.1') {
     return `http://${host}:8000`;
   }
-  // Production Render URL
-  return 'https://grade-change-ai-api.onrender.com';
+  return 'https://ai-project-qns4.onrender.com';
 })();
 
 const api = {
@@ -27,8 +26,8 @@ const api = {
 
 // Global state shared between pages and the decision support panel
 window.appState = {
-  lastPrediction:     null,
-  lastFeatures:       null,
+  lastPrediction: null,
+  lastFeatures: null,
   lastRecommendation: null,
-  dashboardData:      null,
+  dashboardData: null,
 };
