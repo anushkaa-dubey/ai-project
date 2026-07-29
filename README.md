@@ -3,10 +3,6 @@
 
 > An AI-powered industrial decision support system that predicts Basis Weight deviations during paper grade transitions, explains root causes, detects anomalies, recommends optimal machine setpoints under engineering constraints, and continuously improves using operator feedback.
 
-**Live Demo**:
-- Frontend (Vercel): [https://grade-change-ai.vercel.app](https://grade-change-ai.vercel.app)
-- Backend API (Render): [https://grade-change-ai-api.onrender.com/docs](https://grade-change-ai-api.onrender.com/docs)
-
 ---
 
 ## System Architecture
