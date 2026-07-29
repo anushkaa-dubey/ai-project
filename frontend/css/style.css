@@ -1047,7 +1047,16 @@ textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3
     flex: 1;
     overflow: hidden;
   }
-  .topbar-left { flex-direction: row; align-items: center; gap: 12px; }
+  #topbar { padding-left: 0; }
+  #mobile-menu-btn {
+    height: var(--topbar-h);
+    padding: 0 20px;
+    border-radius: 0;
+    border-right: 1px solid var(--border);
+    margin-right: 12px;
+    display: flex;
+  }
+  .topbar-left { flex-direction: row; align-items: center; gap: 0; }
   .page-title-group { display: flex; flex-direction: column; justify-content: center; }
 
   .kpi-grid, .kpi-grid-8 { grid-template-columns: repeat(2, 1fr); }
@@ -1056,17 +1065,24 @@ textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3
 @media (max-width: 768px) {
   .kpi-grid, .kpi-grid-8 { grid-template-columns: 1fr; }
   #topbar { 
-    padding: 12px; 
+    padding: 12px 12px 12px 0; 
     flex-direction: column; 
     height: auto; 
     gap: 12px; 
     align-items: stretch; 
+  }
+  #mobile-menu-btn {
+    height: auto;
+    padding: 0 16px;
+    border-right: none;
+    margin-right: 0;
   }
   .topbar-right { 
     width: 100%; 
     justify-content: space-between; 
     flex-wrap: wrap; 
     gap: 10px;
+    padding-left: 12px;
   }
   .copilot-panel { width: 100%; max-width: 100%; }
   
