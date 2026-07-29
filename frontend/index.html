@@ -11,6 +11,9 @@
 </head>
 <body>
   <div id="app">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+
     <!-- Sidebar -->
     <aside id="sidebar">
       <div class="sidebar-header">
@@ -19,6 +22,7 @@
           <span class="logo-main">GCI</span>
           <span class="logo-sub">Grade Change Intelligence</span>
         </div>
+        <button id="sidebar-close-btn" class="icon-btn mobile-only" style="margin-left:auto;">✕</button>
       </div>
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="dashboard">
@@ -60,8 +64,13 @@
       <!-- Top Bar -->
       <header id="topbar">
         <div class="topbar-left">
-          <h1 id="page-title">Dashboard</h1>
-          <span id="page-subtitle">Real-time Grade Change Intelligence</span>
+          <button id="mobile-menu-btn" class="icon-btn mobile-only" title="Open Menu">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+          </button>
+          <div class="page-title-group">
+            <h1 id="page-title">Dashboard</h1>
+            <span id="page-subtitle">Real-time Grade Change Intelligence</span>
+          </div>
         </div>
         <div class="topbar-right">
           <div class="live-indicator">

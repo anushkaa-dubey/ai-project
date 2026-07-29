@@ -80,11 +80,38 @@ const App = (() => {
     }, 60000);
   }
 
+  function initMobileMenu() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const closeBtn = document.getElementById('sidebar-close-btn');
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    function toggleMenu() {
+      sidebar?.classList.toggle('open');
+      backdrop?.classList.toggle('hidden');
+    }
+
+    function closeMenu() {
+      sidebar?.classList.remove('open');
+      backdrop?.classList.add('hidden');
+    }
+
+    menuBtn?.addEventListener('click', toggleMenu);
+    closeBtn?.addEventListener('click', closeMenu);
+    backdrop?.addEventListener('click', closeMenu);
+    
+    // Close menu when a nav item is clicked on mobile
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.addEventListener('click', closeMenu);
+    });
+  }
+
   function init() {
     initSidebar();
     initClock();
     initDecisionSupport();
     initAutoRefresh();
+    initMobileMenu();
     navigate('dashboard');
     if (window.RecommendationsPage?.load) {
       window.RecommendationsPage.load();
