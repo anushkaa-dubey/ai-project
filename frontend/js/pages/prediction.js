@@ -9,78 +9,77 @@ const PredictionPage = (() => {
 
   function render() {
     document.getElementById('page-content').innerHTML = `
-      <div class="fade-in" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-        <!-- Input Panel -->
-        <div>
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-title">Process Variables Input</div>
-            <div class="form-group" style="margin-bottom:16px">
-              <label class="form-label">Paper Grade</label>
-              <select class="form-select" id="pred-grade" onchange="PredictionPage.applyGradeDefaults()">
+      <div class="prediction-layout fade-in">
+        <!-- Input Panel (Left) -->
+        <div style="display: flex; flex-direction: column; gap: 24px; padding-bottom: 24px;">
+          <div class="premium-card">
+            <div class="premium-section-title">Process Variables</div>
+            
+            <!-- Full-width Grade Selector -->
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label class="form-label" style="font-size: 12px;">Target Paper Grade</label>
+              <select class="form-select" id="pred-grade" onchange="PredictionPage.applyGradeDefaults()" style="font-size: 14px; padding: 10px 12px; background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1);">
                 <option value="45">45 GSM — Newsprint</option>
                 <option value="60">60 GSM — Book Paper</option>
                 <option value="80" selected>80 GSM — Office Paper</option>
                 <option value="120">120 GSM — Card Stock</option>
               </select>
             </div>
-            <div class="form-grid form-grid-2">
-              ${inputField('Machine Speed', 'pred-machine_speed', 670, 'm/min', 350, 1100)}
-              ${inputField('Stock Flow', 'pred-stock_flow', 348, 'L/min', 150, 550)}
-              ${inputField('Headbox Pressure', 'pred-headbox_pressure', 0.55, 'bar', 0.25, 0.90, 0.01)}
-              ${inputField('Steam Pressure', 'pred-steam_pressure', 5.05, 'bar', 2.8, 7.5, 0.1)}
-              ${inputField('Dryer Temp', 'pred-dryer_temperature', 128, '°C', 95, 165)}
-              ${inputField('Moisture', 'pred-moisture', 4.75, '%', 2.0, 9.5, 0.1)}
-              ${inputField('Pulp Consistency', 'pred-pulp_consistency', 0.76, 'frac', 0.35, 1.05, 0.01)}
-              ${inputField('Current BW', 'pred-basis_weight', 80, 'g/m²', 30, 150)}
+
+            <!-- Machine Section -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Machine</div>
+              <div class="form-grid form-grid-2" style="gap: 12px;">
+                ${inputField('Machine Speed', 'pred-machine_speed', 670, 'm/min', 350, 1100)}
+                ${inputField('Stock Flow', 'pred-stock_flow', 348, 'L/min', 150, 550)}
+              </div>
             </div>
-            <div style="margin-top:16px;display:flex;gap:10px">
-              <button class="btn btn-primary btn-full" onclick="PredictionPage.runPredict()">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+
+            <!-- Process Section -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Process</div>
+              <div class="form-grid form-grid-2" style="gap: 12px;">
+                ${inputField('Headbox Pressure', 'pred-headbox_pressure', 0.55, 'bar', 0.25, 0.90, 0.01)}
+                ${inputField('Steam Pressure', 'pred-steam_pressure', 5.05, 'bar', 2.8, 7.5, 0.1)}
+                ${inputField('Dryer Temp', 'pred-dryer_temperature', 128, '°C', 95, 165)}
+              </div>
+            </div>
+
+            <!-- Material Section -->
+            <div style="margin-bottom: 16px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Material</div>
+              <div class="form-grid form-grid-2" style="gap: 12px;">
+                ${inputField('Moisture', 'pred-moisture', 4.75, '%', 2.0, 9.5, 0.1)}
+                ${inputField('Pulp Consistency', 'pred-pulp_consistency', 0.76, 'frac', 0.35, 1.05, 0.01)}
+                ${inputField('Current BW', 'pred-basis_weight', 80, 'g/m²', 30, 150)}
+              </div>
+            </div>
+            
+            <!-- Hidden context fields for backward compatibility -->
+            <input type="hidden" id="pred-prev_grade" value="80" />
+            <input type="hidden" id="pred-next_grade" value="80" />
+            <input type="hidden" id="pred-time_since_grade_change" value="120" />
+            <input type="hidden" id="pred-is_transition" value="0" />
+
+            <!-- Sticky Bottom Actions -->
+            <div class="sticky-bottom-bar">
+              <button class="btn btn-primary btn-full" onclick="PredictionPage.runPredict()" style="padding: 12px; font-size: 14px; border-radius: 8px;">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="margin-right:4px;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
                 Run Prediction
               </button>
-              <button class="btn btn-secondary" onclick="PredictionPage.applyGradeDefaults()">Reset Defaults</button>
-            </div>
-          </div>
-
-          <!-- Transition Context -->
-          <div class="card">
-            <div class="card-title">Grade Transition Context</div>
-            <div class="form-grid form-grid-2">
-              <div class="form-group">
-                <label class="form-label">Previous Grade</label>
-                <select class="form-select" id="pred-prev_grade">
-                  <option value="45">45 GSM</option><option value="60" selected>60 GSM</option>
-                  <option value="80">80 GSM</option><option value="120">120 GSM</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Next Grade</label>
-                <select class="form-select" id="pred-next_grade">
-                  <option value="45">45 GSM</option><option value="60">60 GSM</option>
-                  <option value="80" selected>80 GSM</option><option value="120">120 GSM</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-grid form-grid-2" style="margin-top:12px">
-              ${inputField('Time Since Change', 'pred-time_since_grade_change', 120, 'min', 0, 600)}
-              <div class="form-group">
-                <label class="form-label">Transition Active</label>
-                <select class="form-select" id="pred-is_transition">
-                  <option value="0">No — Stable</option>
-                  <option value="1">Yes — In Transition</option>
-                </select>
-              </div>
+              <button class="btn btn-secondary btn-full" onclick="PredictionPage.applyGradeDefaults()" style="padding: 12px; font-size: 13px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">Reset Defaults</button>
             </div>
           </div>
         </div>
 
-        <!-- Results Panel -->
-        <div id="pred-results">
-          <div class="card" style="display:flex;align-items:center;justify-content:center;min-height:300px;color:var(--text-muted);flex-direction:column;gap:12px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="opacity:0.3">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        <!-- Results Panel (Right) -->
+        <div id="pred-results" style="display:flex; flex-direction:column;">
+          <div class="premium-card" style="display:flex;flex:1;align-items:center;justify-content:center;color:var(--text-muted);flex-direction:column;gap:16px;min-height:500px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64" style="opacity:0.3; color:var(--accent);">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            <span>Submit process variables to generate prediction</span>
+            <div style="font-size:15px; font-weight:500; color:var(--text-secondary);">Enter process variables and run the model.</div>
+            <div style="font-size:13px;">The AI will predict the outcome based on current parameters.</div>
           </div>
         </div>
       </div>`;
@@ -89,8 +88,8 @@ const PredictionPage = (() => {
   function inputField(label, id, def, unit, min, max, step=1) {
     return `
       <div class="form-group">
-        <label class="form-label">${label} <span style="color:var(--text-muted)">[${unit}]</span></label>
-        <input type="number" class="form-input" id="${id}" value="${def}" min="${min}" max="${max}" step="${step}" />
+        <label class="form-label" style="font-size:12px;">${label} <span style="color:var(--text-muted);font-weight:400;text-transform:none;">[${unit}]</span></label>
+        <input type="number" class="form-input" id="${id}" value="${def}" min="${min}" max="${max}" step="${step}" style="font-size:14px;padding:8px 12px;background:rgba(0,0,0,0.2);border-color:rgba(255,255,255,0.1);" />
       </div>`;
   }
 
@@ -160,72 +159,97 @@ const PredictionPage = (() => {
     };
 
     document.getElementById('pred-results').innerHTML = `
-      <div class="fade-in" style="display:flex;flex-direction:column;gap:16px">
-        <!-- Main prediction card -->
-        <div class="card" style="border-color:${r.status==='SAFE'?'rgba(65,215,150,0.35)':r.status==='WARNING'?'rgba(255,182,92,0.35)':'rgba(255,111,111,0.35)'}">
-          <div class="card-title">Prediction Result</div>
-          <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:16px">
+      <div class="fade-in" style="display:flex;flex-direction:column;gap:24px;">
+        <!-- Premium Summary Panel -->
+        <div class="premium-card" style="border-top: 4px solid ${r.status==='SAFE'?'var(--safe)':r.status==='WARNING'?'var(--warning)':'var(--critical)'}">
+          <div class="premium-section-title">
+            <span>Prediction Summary</span>
+            ${statusBadge(r.status)}
+          </div>
+          
+          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin-top:20px;">
             <div>
-              <div style="font-size:48px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text-primary);line-height:1">${r.predicted_bw.toFixed(2)}</div>
-              <div style="font-size:16px;color:var(--text-secondary)">g/m²  predicted</div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              ${statusBadge(r.status)}
-              <span class="kpi-badge badge-accent">Confidence: ${r.confidence}%</span>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding-top:14px;border-top:1px solid var(--border)">
-            <div><div class="kpi-label">Safe Range</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--safe)">${r.safe_range.low}–${r.safe_range.high} g/m²</div></div>
-            <div><div class="kpi-label">Deviation</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:${Math.abs(r.deviation)>2?'var(--warning)':'var(--text-primary)'}">${r.deviation>0?'+':''}${r.deviation.toFixed(3)} g/m²</div></div>
-            <div><div class="kpi-label">Anomaly Prob</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:${r.anomaly_prob>0.5?'var(--critical)':'var(--text-primary)'}">${(r.anomaly_prob*100).toFixed(1)}%</div></div>
-          </div>
-        </div>
-
-        <!-- SHAP Explanation -->
-        <div class="card">
-          <div class="card-title">SHAP Explainability — Feature Contributions</div>
-          <div class="shap-bar-container">
-            ${shap.map(s => `
-              <div class="shap-item">
-                <span class="shap-label">${labelMap[s.feature]||s.feature}</span>
-                <div class="shap-bar-track">
-                  <div class="shap-bar-fill ${s.shap_value>0?'shap-positive':'shap-negative'}"
-                    style="width:${Math.round(Math.abs(s.shap_value)/maxAbs*100)}%"></div>
-                </div>
-                <span class="shap-pct">${s.shap_value>0?'+':''}${s.contribution_pct}%</span>
-              </div>`).join('')}
-          </div>
-          <div style="margin-top:12px;font-size:11px;color:var(--text-muted)">
-            🔴 Red bars push BW higher · 🟢 Green bars pull BW lower
-          </div>
-        </div>
-
-        <!-- Anomaly Card -->
-        <div class="card" style="border-color:${r.anomaly_prob>0.5?'rgba(239,68,68,0.3)':'var(--border)'}">
-          <div class="card-title">Anomaly Detection</div>
-          <div style="display:flex;align-items:center;gap:16px">
-            <div style="position:relative;width:70px;height:70px">
-              <svg viewBox="0 0 36 36" style="transform:rotate(-90deg);width:70px;height:70px">
-                <circle cx="18" cy="18" r="15" fill="none" stroke="var(--border)" stroke-width="3"/>
-                <circle cx="18" cy="18" r="15" fill="none"
-                  stroke="${r.anomaly_prob>0.6?'var(--critical)':r.anomaly_prob>0.3?'var(--warning)':'var(--safe)'}"
-                  stroke-width="3" stroke-dasharray="94 94"
-                  stroke-dashoffset="${94-(r.anomaly_prob*94)}" stroke-linecap="round"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text-primary)">${Math.round(r.anomaly_prob*100)}%</div>
-            </div>
-            <div>
-              <div style="font-size:14px;font-weight:600;color:${r.anomaly_prob>0.5?'var(--critical)':r.anomaly_prob>0.3?'var(--warning)':'var(--safe)'}">
-                ${r.anomaly_prob>0.6?'⚠ HIGH ANOMALY RISK':r.anomaly_prob>0.3?'⚡ MODERATE ANOMALY':'✓ Normal Process Behaviour'}
+              <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Predicted Basis Weight</div>
+              <div style="font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text-primary);line-height:1;">
+                ${r.predicted_bw.toFixed(2)} <span style="font-size:14px;color:var(--text-secondary);font-weight:500;">g/m²</span>
               </div>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Isolation Forest anomaly probability</div>
-              <div style="font-size:12px;color:var(--text-muted)">Score: ${r.anomaly_score.toFixed(4)}</div>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Confidence Score</div>
+              <div style="font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent);line-height:1;">
+                ${r.confidence}%
+              </div>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Target Grade</div>
+              <div style="font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text-primary);line-height:1;">
+                ${body.grade} <span style="font-size:14px;color:var(--text-secondary);font-weight:500;">GSM</span>
+              </div>
+            </div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.05);">
+            <div>
+              <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Safe Range</div>
+              <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--safe);margin-top:4px;">${r.safe_range.low}–${r.safe_range.high} g/m²</div>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Deviation</div>
+              <div style="font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace;color:${Math.abs(r.deviation)>2?'var(--warning)':'var(--text-primary)'};margin-top:4px;">${r.deviation>0?'+':''}${r.deviation.toFixed(3)} g/m²</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHAP Explanation & Anomaly -->
+        <div class="prediction-results-grid">
+          <!-- Feature Importance -->
+          <div class="premium-card">
+            <div class="premium-section-title">Feature Impact (SHAP)</div>
+            <div class="shap-bar-container" style="margin-top:16px;">
+              ${shap.slice(0, 5).map(s => `
+                <div class="shap-item" style="margin-bottom:12px;">
+                  <span class="shap-label" style="font-size:12px;min-width:110px;">${labelMap[s.feature]||s.feature}</span>
+                  <div class="shap-bar-track" style="height:6px;background:rgba(255,255,255,0.1);">
+                    <div class="shap-bar-fill ${s.shap_value>0?'shap-positive':'shap-negative'}"
+                      style="width:${Math.round(Math.abs(s.shap_value)/maxAbs*100)}%"></div>
+                  </div>
+                  <span class="shap-pct" style="font-size:12px;">${s.shap_value>0?'+':''}${s.contribution_pct}%</span>
+                </div>`).join('')}
+            </div>
+            <div style="margin-top:16px;font-size:12px;color:var(--text-muted);">
+              🔴 Increases BW · 🟢 Decreases BW
+            </div>
+          </div>
+
+          <!-- Model Explanation / Anomaly -->
+          <div class="premium-card">
+            <div class="premium-section-title">Process Stability</div>
+            <div style="display:flex;align-items:center;gap:20px;margin-top:16px;">
+              <div style="position:relative;width:80px;height:80px;flex-shrink:0;">
+                <svg viewBox="0 0 36 36" style="transform:rotate(-90deg);width:80px;height:80px">
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
+                  <circle cx="18" cy="18" r="15" fill="none"
+                    stroke="${r.anomaly_prob>0.6?'var(--critical)':r.anomaly_prob>0.3?'var(--warning)':'var(--safe)'}"
+                    stroke-width="3" stroke-dasharray="94 94"
+                    stroke-dashoffset="${94-(r.anomaly_prob*94)}" stroke-linecap="round"/>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text-primary)">${Math.round(r.anomaly_prob*100)}%</div>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:14px;font-weight:700;margin-bottom:4px;color:${r.anomaly_prob>0.5?'var(--critical)':r.anomaly_prob>0.3?'var(--warning)':'var(--safe)'}">
+                  ${r.anomaly_prob>0.6?'High Instability Risk':r.anomaly_prob>0.3?'Moderate Instability':'Stable Process'}
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
+                  The isolation forest model evaluates current variables against historical stable baselines.
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">Anomaly Score: ${r.anomaly_score.toFixed(4)}</div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Feedback button -->
-        <button class="btn btn-secondary btn-full" onclick="App.navigate('feedback')">Submit Operator Feedback →</button>
+        <button class="btn btn-secondary btn-full" onclick="App.navigate('feedback')" style="padding:14px;border-radius:12px;background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.08);font-size:13px;">Submit Operator Feedback →</button>
       </div>`;
   }
 
