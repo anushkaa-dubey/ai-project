@@ -1,7 +1,11 @@
 /* API Client */
 const API_BASE = (() => {
   const host = window.location.hostname || '127.0.0.1';
-  return `http://${host}:8010`;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return `http://${host}:8000`;
+  }
+  // Production Render URL
+  return 'https://grade-change-ai-api.onrender.com';
 })();
 
 const api = {

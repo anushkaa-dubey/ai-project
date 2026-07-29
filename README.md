@@ -3,6 +3,10 @@
 
 > An AI-powered industrial decision support system that predicts Basis Weight deviations during paper grade transitions, explains root causes, detects anomalies, recommends optimal machine setpoints under engineering constraints, and continuously improves using operator feedback.
 
+**Live Demo**:
+- Frontend (Vercel): [https://grade-change-ai.vercel.app](https://grade-change-ai.vercel.app)
+- Backend API (Render): [https://grade-change-ai-api.onrender.com/docs](https://grade-change-ai-api.onrender.com/docs)
+
 ---
 
 ## System Architecture
@@ -45,7 +49,7 @@ SHAP Explainability  Isolation Forest
       Operator Feedback
               │
               ▼
-       SQLite Database
+    PostgreSQL Database (Neon)
 ```
 
 ---
@@ -55,9 +59,10 @@ SHAP Explainability  Isolation Forest
 | Layer     | Technology                                   |
 |-----------|----------------------------------------------|
 | Frontend  | Vanilla HTML/CSS/JS + Chart.js CDN           |
-| Backend   | FastAPI (Python 3.10+)                        |
+| Backend   | FastAPI (Python 3.11)                        |
 | ML        | XGBoost, SHAP, Scikit-learn (Isolation Forest)|
-| Database  | SQLite via SQLAlchemy                         |
+| Database  | PostgreSQL (via Neon), SQLAlchemy, Alembic    |
+| Deploy    | Docker Compose, Vercel, Render/Railway       |
 | Theme     | Honeywell Industrial Dark UI                 |
 
 ---
@@ -65,43 +70,77 @@ SHAP Explainability  Isolation Forest
 ## Quick Start
 
 ### Prerequisites
-- Python 3.10 or higher
-- pip
+- Docker and Docker Compose
+- Or: Python 3.11 and PostgreSQL
 
-### Step 1 — Run Setup (First Time)
+### Local Development via Docker (Recommended)
+The easiest way to run the full stack locally is with Docker Compose.
+
 ```bash
-# Double-click or run:
-setup_and_run.bat
+# 1. Build and start the containers
+docker-compose up --build
 ```
-This will:
-1. Create a Python virtual environment
-2. Install all dependencies
-3. Generate 50,000 rows of synthetic paper manufacturing data
-4. Train the XGBoost model (~2-4 minutes)
-5. Start the FastAPI backend at `http://127.0.0.1:8000`
+This will automatically:
+1. Start a PostgreSQL 15 database on port 5432
+2. Run Alembic migrations to set up the schema
+3. Start the FastAPI backend on port 8000
+4. Serve the frontend via Nginx on port 3000
 
-### Step 2 — Start Frontend (New Terminal)
-```bash
-start_frontend.bat
-# OR manually:
-cd frontend && python -m http.server 3000
-```
-Open your browser at: **http://localhost:3000**
+Access the app at: **http://localhost:3000**
+Access API Docs at: **http://localhost:8000/docs**
 
-### Manual Steps (Advanced)
+### Local Development (Manual Setup)
+
+1. Start a local PostgreSQL instance and create a database named `grade_change_db`.
+2. Update the `DATABASE_URL` in `backend/.env`.
+
 ```bash
 # Backend
 cd backend
 python -m venv venv
-venv\Scripts\activate        # Windows
+# Activate venv: venv\Scripts\activate (Windows) / source venv/bin/activate (Mac/Linux)
 pip install -r requirements.txt
-python models/train_model.py  # generates data + trains model
+python models/train_model.py  # Generate synthetic data & train ML models
+alembic upgrade head          # Run database migrations
 python -m uvicorn main:app --reload --port 8000
 
 # Frontend (separate terminal)
 cd frontend
 python -m http.server 3000
 ```
+
+---
+
+---
+
+## Deployment Architecture
+
+The application is fully containerised and uses environment variables for simple deployment.
+
+- **Frontend**: Hosted on Vercel.
+- **Backend API**: Hosted on Render (or Railway).
+- **Database**: Managed PostgreSQL hosted on Neon.
+
+### 1. Database (Neon)
+1. Create a free account at [Neon.tech](https://neon.tech).
+2. Create a new PostgreSQL project.
+3. Copy the Connection String (e.g., `postgresql://...`).
+
+### 2. Backend (Render / Railway)
+1. Link your GitHub repository to Render/Railway.
+2. Select the `backend` folder as the root directory (or use Dockerfile).
+3. Set the following Environment Variables:
+   - `ENVIRONMENT=production`
+   - `DATABASE_URL=<your-neon-postgres-connection-string>`
+   - `BACKEND_CORS_ORIGINS=https://your-frontend-domain.vercel.app`
+4. Define the build/start command to run migrations before starting:
+   - `alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT`
+
+### 3. Frontend (Vercel)
+1. Import your GitHub repository to Vercel.
+2. Set the "Framework Preset" to "Other".
+3. Set the "Root Directory" to `frontend`.
+4. Ensure your JS `api.js` points to the deployed Render backend URL.
 
 ---
 
@@ -229,9 +268,14 @@ aiproject/
 │   │   ├── recommendation_service.py ← Hybrid engine
 │   │   ├── correlation_service.py    ← Pearson/Spearman
 │   │   └── copilot_service.py ← NL decision support
-│   └── database/
-│       └── db.py              ← SQLAlchemy + SQLite
+│   ├── database/
+│   │   └── db.py              ← SQLAlchemy + PostgreSQL config
+│   ├── alembic/               ← Database migrations
+│   ├── config.py              ← Pydantic environment configuration
+│   └── Dockerfile             ← Backend container definition
+├── docker-compose.yml         ← Full-stack local orchestration
 └── frontend/
+    ├── Dockerfile             ← Nginx frontend container
     ├── index.html
     ├── css/style.css          ← Honeywell industrial theme
     └── js/

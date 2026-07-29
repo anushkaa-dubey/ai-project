@@ -5,12 +5,21 @@ import sys, os, json
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI
+import logging
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from database.db import init_db
+from fastapi.exceptions import RequestValidationError
+from database.db import engine
 from routers import dashboard, predict, simulate, feedback, analytics, correlations, copilot
+from config import settings
 
+# ── Structured Logging ────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 # ── Custom JSON encoder that converts numpy types to native Python ──────────
 class _NumpyEncoder(json.JSONEncoder):
@@ -41,15 +50,16 @@ class NumpyJSONResponse(JSONResponse):
 
 # ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(
-    title="Grade Change Intelligence API",
+    title=settings.PROJECT_NAME,
     description="AI-powered decision support for paper manufacturing grade transitions",
-    version="1.0.0",
+    version=settings.VERSION,
     default_response_class=NumpyJSONResponse,   # ← applies to every route
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origins=[settings.BACKEND_CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,8 +68,25 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup():
-    init_db()
+    logger.info("Starting up Grade Change Intelligence API...")
 
+
+# ── Centralized Error Handling ────────────────────────────────────────────────
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.warning(f"Validation error on {request.method} {request.url}: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "message": "Invalid request parameters"}
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled error on {request.method} {request.url}: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An internal server error occurred.", "message": str(exc)}
+    )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(dashboard.router,    tags=["Dashboard"])
@@ -73,4 +100,5 @@ app.include_router(copilot.router,      tags=["Decision Support"])
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "Grade Change Intelligence API"}
+    return {"status": "ok", "service": settings.PROJECT_NAME, "environment": settings.ENVIRONMENT}
+
